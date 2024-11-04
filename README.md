@@ -1,6 +1,6 @@
 # Framework 16 - RGB LED Matrix Input Module [micropython]
 
-This is micropython code for driving __Joe Schroedl__'s RGB LED Matrix Input Module.
+This is micropython code for driving __Joe Schroedl__'s [RGB LED Matrix Input Module](https://github.com/corndog2000/RGB-LED-Matrix-Input-Module).
 ![Framework16 Laptop with two connected RGB Input Modules](img/FW16_with_modules.jpg)
 ## Installation: [Easiest Method]
 1. GENTLY flip dip switch 2 on the Input Module towards the 'ON' label with tweezers. ![DIP switch 2 is shown in the ON position](img/bootsel_dipsw_position.jpg)
