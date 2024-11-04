@@ -2,10 +2,12 @@ from machine import Pin
 from neopixel import NeoPixel
 import time
 import random
+import array
 
 gpio_starting_pin = 8
 led_update_counter = 0
 low_power_brightness = 0.01
+power_brightness_steps = [low_power_brightness, 0.05, 0.05, 0.045, 0.04, 0.035, 0.03, 0.02, 0.02, 0.02, 0.02, 0.018, 0.018, 0.015, 0.015, 0.015, 0]
 loop_counter = 0
 
 # Initialize LED strips
@@ -64,33 +66,30 @@ def rainbow_cycle(wait=0.01):
     print(loop_counter)
 
 def twinkle_effect():
-    twinkle_color = scale_color((255, 255, 255),0.1)  # White
+    twinkle_color = scale_color((255, 255, 255), 0.1)  # White
 
     # Turn off all LEDs
     set_all_leds((0, 0, 0))
     
+    # Create lists for selected LEDs and their colors
+    selected_leds = []
+    selected_color = []
+    
     # Randomly turn on a few groups
-    for _ in range(random.randint(1, 4)):  # Number of twinkles
-        group_index = random.randint(0, 288 - 1)
-        color = wheel((group_index * 256 // 288) & 255)
-        scaled_color = scale_color(color, low_power_brightness)
-        set_led(group_index, scaled_color)
-    update_leds()
-    print("w")
+    num_twinkles = random.randint(1, 4)
+    for j in range(num_twinkles):  # Number of twinkles
+        led_index = random.randint(0, 287)  # 288 LEDs total, but indexing starts at 0
+        selected_leds.append(led_index)
+        selected_color.append(wheel((led_index * 256 // 288) & 255))
+    
+    for brightness in power_brightness_steps:
+        for l in range(num_twinkles):
+            scaled_color = scale_color(selected_color[l], brightness)
+            set_led(selected_leds[l], scaled_color)
+        update_leds()
+        time.sleep(0.04)
     time.sleep(1)
-
+    
 while True:
     #rainbow_cycle()
     twinkle_effect()
-        
-#for x in range(0, 288):
-#    set_led(x, (2, 0, 0))
-#    update_leds()
-#    time.sleep_ms(0)
-
-
-#pin = Pin(15, Pin.OUT)
-#np = NeoPixel(pin, 36)
-#for x in range(0, 36):
-#    np[x] = (0, 0, 0)
-#    np.write()
