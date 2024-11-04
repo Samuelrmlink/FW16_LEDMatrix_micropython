@@ -1,3 +1,6 @@
+# Copyright (c) Samuel Hedrick <samuel@rml.ink>
+# SPDX-License-Identifier: MIT
+
 from machine import Pin
 from neopixel import NeoPixel
 import time
