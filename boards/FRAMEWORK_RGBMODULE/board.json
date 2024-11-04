@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "rp2-pico.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RGB-LED-Matrix-Input-Module",
+    "thumbnail": "",
+    "url": "https://github.com/corndog2000/RGB-LED-Matrix-Input-Module",
+    "vendor": "Joe Schroedl"
+}
