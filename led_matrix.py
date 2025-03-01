@@ -25,11 +25,6 @@ def set_led(index, color):
     if strip_index < len(strips):
         strips[strip_index][led_index] = color
         
-def update_leds():
-    # Update all LED strips
-    for strip in strips:
-        strip.write()
-
 def set_all_leds(color):
     for x in range(0, 288):
         set_led(x, color)
@@ -37,9 +32,6 @@ def set_all_leds(color):
 
 def scale_color(color, factor):
     return tuple(int(c * factor) for c in color)
-
-def interpolate_color(start_color, end_color, factor):
-    return tuple(int(start_color[i] + factor * (end_color[i] - start_color[i])) for i in range(3))
 
 def wheel(pos):
     # Generate rainbow colors across 0-255 positions.
@@ -52,22 +44,6 @@ def wheel(pos):
         pos -= 170
         return (0, pos * 3, 255 - pos * 3)
     
-def rainbow_cycle(wait=0.01):
-    global loop_counter
-
-    loop_counter %= 256
-
-    for i in range(0, 288):
-        pixel_index = (i * 256 // 288) + loop_counter
-        color = wheel(pixel_index & 255)
-        scaled_color = scale_color(color, low_power_brightness)
-        set_led(i, scaled_color)
-    update_leds()
-    print("w")
-    time.sleep(wait)
-    loop_counter += 1
-    print(loop_counter)
-
 def twinkle_effect():
     twinkle_color = scale_color((255, 255, 255), 0.1)  # White
 
@@ -89,76 +65,15 @@ def twinkle_effect():
         for l in range(num_twinkles):
             scaled_color = scale_color(selected_color[l], brightness)
             set_led(selected_leds[l], scaled_color)
-        update_leds()
+        
+        # Update all LED strips
+        for strip in strips:
+            strip.write()
+        
         time.sleep(0.04)
     time.sleep(1)
 
-
-def twinkle_effect_async_randomtimeframe():
-    led_states = [(0, (0, 0, 0)) for _ in range(288)]  # (brightness, color) for each LED
-    while True:
-        for i in range(288):
-            # Determine which strip and LED
-            strip_index, led_index = divmod(i, leds_per_strip)
-            if strip_index < len(strips):
-                current_brightness, current_color = led_states[i]
-                if random.random() < 0.002:  # 1% chance to start twinkling
-                    if current_brightness == 0:  # If LED is off
-                        current_color = wheel(random.randint(0, 255))  # New random color
-                        current_brightness = 0.01  # Start brightening
-                    elif current_brightness >= 0.1:  # If LED is on
-                        current_brightness = 0  # Turn off
-                    else:
-                        current_brightness += 0.01  # Continue brightening
-                elif current_brightness > 0:
-                    if random.random() < 0.15:  # 5% chance to start dimming
-                        current_brightness -= 0.01  # Start dimming
-                    else:
-                        # Keep the same brightness or very slightly adjust for natural flicker
-                        current_brightness = min(0.1, current_brightness + random.uniform(-0.005, 0.005))
-                # Ensure brightness doesn't go negative
-                current_brightness = max(0, current_brightness)
-                led_states[i] = (current_brightness, current_color)
-                # Set the LED color directly on the strip
-                strips[strip_index][led_index] = scale_color(current_color, current_brightness)
-        # Update all LED strips
-        for strip in strips:
-            strip.write()
-        time.sleep(0.1)  # Update speed, adjust for desired effect
-
-def twinkle_effect_async():
-    led_states = [(0, (0, 0, 0)) for _ in range(288)]  # (brightness, color) for each LED
-    while True:
-        for i in range(288):
-            # Determine which strip and LED
-            strip_index, led_index = divmod(i, leds_per_strip)
-            if strip_index < len(strips):
-                current_brightness, current_color = led_states[i]
-                if random.random() < 0.002:  # 1% chance to start twinkling
-                    if current_brightness == 0:  # If LED is off
-                        current_color = wheel(random.randint(0, 255))  # New random color
-                        current_brightness = 0.01  # Start brightening
-                    elif current_brightness >= 0.1:  # If LED is on
-                        current_brightness = 0  # Turn off
-                    else:
-                        current_brightness += 0.01  # Continue brightening
-                elif current_brightness > 0:
-                    if random.random() < 0.15:  # 5% chance to start dimming
-                        current_brightness -= 0.01  # Start dimming
-                    else:
-                        # Keep the same brightness or very slightly adjust for natural flicker
-                        current_brightness = min(0.1, current_brightness + random.uniform(-0.005, 0.005))
-                # Ensure brightness doesn't go negative
-                current_brightness = max(0, current_brightness)
-                led_states[i] = (current_brightness, current_color)
-                # Set the LED color directly on the strip
-                strips[strip_index][led_index] = scale_color(current_color, current_brightness)
-        # Update all LED strips
-        for strip in strips:
-            strip.write()
-        time.sleep(0.1)  # Update speed, adjust for desired effect
-
-def twinkle_effect_async2(max_lit=5):
+def twinkle_effect_2(max_lit=5):
     led_states = [(0, (0, 0, 0)) for _ in range(288)]  # (brightness, color) for each LED
     lit_leds = [0] * 288  # Track which LEDs are currently lit
 
@@ -204,59 +119,9 @@ def twinkle_effect_async2(max_lit=5):
         time.sleep(0.02)  # Update speed, adjust for desired effect
 
 
-def twinkle_effect_async3(max_lit=5):
-    led_states = [(0, 0, (0, 0, 0)) for _ in range(288)]  # (brightness_stage, timer, color) for each LED
-    lit_leds = set()
-
-    def update_led_state(led_state):
-        stage, timer, color = led_state
-        if stage > 0:  # If LED is on
-            if timer <= 0:
-                if stage < len(power_brightness_steps):
-                    stage += 1
-                    timer = 0.04  # Set timer for next stage
-                else:
-                    stage = 0  # Turn off LED
-                    timer = 0  # Reset timer
-            else:
-                timer -= 0.01  # Decrease timer by sleep time
-        return stage, timer, color
-
-    while True:
-        # Count currently lit LEDs
-        currently_lit = len(lit_leds)
-
-        for i in range(288):
-            strip_index, led_index = divmod(i, leds_per_strip)
-
-            if strip_index < len(strips):
-                stage, timer, current_color = led_states[i]
-
-                if i in lit_leds:  # If this LED is currently lit
-                    new_stage, new_timer, _ = update_led_state(led_states[i])
-                    led_states[i] = (new_stage, new_timer, current_color)
-
-                    if new_stage == 0:  # If the LED has just turned off
-                        lit_leds.remove(i)
-                else:  # If this LED is off
-                    if currently_lit < max_lit and random.random() < 0.01:  # Chance to turn on if we can
-                        current_color = wheel(random.randint(0, 255))
-                        led_states[i] = (1, 0.04, current_color)  # Start at stage 1, set timer for first step
-                        lit_leds.add(i)
-                        currently_lit += 1
-
-                brightness = power_brightness_steps[stage-1] if stage > 0 else 0
-                strips[strip_index][led_index] = scale_color(current_color, brightness)
-
-        # Update all LED strips
-        for strip in strips:
-            strip.write()
-
-        time.sleep(0.01)  # Update rate, we manage the 40ms within the function
-        
 animation1 = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.5, 0.4, 0.7, 0.8, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 0.7, 0.5, 0.4, 0.3, 0.2, 0.1, 0.1, 0]
         
-def twinkle_effect_random(max_lit=5, brightness_scale = 0.08):
+def twinkle_effect_3(max_lit=5, brightness_scale = 0.08):
     led_states = [(0, (0, 0, 0)) for _ in range(288)]  # (brightness, color) for each LED
     lit_leds = [0] * 288  # Track which LEDs are currently lit
     animation_states = [0] * 288
@@ -300,6 +165,6 @@ def twinkle_effect_random(max_lit=5, brightness_scale = 0.08):
 
 
 while True:
-    #rainbow_cycle()
-    #twinkle_effect_async3()
-    twinkle_effect_random()
+    #twinkle_effect()
+    #twinkle_effect_2()
+    twinkle_effect_3()
