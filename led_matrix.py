@@ -119,7 +119,7 @@ def twinkle_effect_2(max_lit=5):
         time.sleep(0.02)  # Update speed, adjust for desired effect
 
 
-animation1 = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.5, 0.4, 0.7, 0.8, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 0.7, 0.5, 0.4, 0.3, 0.2, 0.1, 0.1, 0]
+brightness_animation_1 = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.5, 0.4, 0.7, 0.8, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 0.7, 0.5, 0.4, 0.3, 0.2, 0.1, 0.1, 0]
         
 def twinkle_effect_3(max_lit=5, brightness_scale = 0.08):
     led_states = [(0, (0, 0, 0)) for _ in range(288)]  # (brightness, color) for each LED
@@ -144,12 +144,12 @@ def twinkle_effect_3(max_lit=5, brightness_scale = 0.08):
                         current_color = wheel(random.randint(0, 255))  # New random color
                         animation_index = 1                    
                 else:
-                    if len(animation1) == animation_index:
+                    if len(brightness_animation_1) == animation_index:
                         animation_index = 0
                     else:
                         animation_index += 1
                         
-                current_brightness = animation1[animation_index - 1]
+                current_brightness = brightness_animation_1[animation_index - 1]
                         
                 # Stash the led_state for the next run
                 led_states[i] = (current_brightness, current_color)
@@ -162,9 +162,3 @@ def twinkle_effect_3(max_lit=5, brightness_scale = 0.08):
         for strip in strips:
             strip.write()
         time.sleep(0.02)  # Update speed, adjust for desired effect
-
-
-while True:
-    #twinkle_effect()
-    #twinkle_effect_2()
-    twinkle_effect_3()
