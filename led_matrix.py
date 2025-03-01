@@ -24,7 +24,16 @@ def set_led(index, color):
     strip_index, led_index = divmod(index, leds_per_strip)
     if strip_index < len(strips):
         strips[strip_index][led_index] = color
-        
+
+def update_leds():
+    # Update all LED strips
+    for strip in strips:
+        strip.write()
+
+def set_led_debug(index, color):
+    set_led(index, color)
+    update_leds()
+
 def set_all_leds(color):
     for x in range(0, 288):
         set_led(x, color)
